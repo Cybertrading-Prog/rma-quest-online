@@ -201,8 +201,6 @@ function startLivePolling(){
 function stopLivePolling(){
   if(livePollHandle){ window.clearInterval(livePollHandle); livePollHandle = null; }
 }
-  }catch(e){}
-}
 
 function playFrankVoice(key){const clips=FRANK_VOICES[key]||[]; if(!clips.length) return; try{frankVoiceEl.pause(); frankVoiceEl.currentTime=0; frankVoiceEl.src=randomItem(clips); frankVoiceEl.play().catch(()=>{});}catch{}}
 function stopFrankVoice(){try{frankVoiceEl.pause(); frankVoiceEl.currentTime=0;}catch{}}
