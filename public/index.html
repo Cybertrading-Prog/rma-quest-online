@@ -340,23 +340,43 @@ try{
 const selectedTemplate=state.taskTemplates.find(t=>Number(t.id)===Number(taskTemplateId||taskTemplateEl.value));
 const playerName=isAdmin()?taskPlayerEl.value:session.playerName;
 const beforeSteps=(state.players.find(p=>p.name===playerName)||{}).steps||0;
-const payload={taskTemplateId:Number(taskTemplateId||taskTemplateEl.value),playerName:taskPlayerEl.value,points:Number(taskPointsEl.value||selectedTemplate?.points||0),category:taskCategoryEl.value||selectedTemplate?.category||'RMA',note:taskNoteEl.value.trim()};
+const effectivePoints = Number(selectedTemplate?.points || taskPointsEl.value || 0);
+const effectiveCategory = selectedTemplate?.category || taskCategoryEl.value || 'RMA';
+const payload={
+  taskTemplateId:Number(taskTemplateId||taskTemplateEl.value),
+  playerName:taskPlayerEl.value,
+  points:effectivePoints,
+  category:effectiveCategory,
+  note:taskNoteEl.value.trim()
+};
 const data=await api('/api/action',{method:'POST',body:{action:'addEntry',payload}});
 state=data.state;
 taskNoteEl.value='';
 ensureFrankState();
 renderAll();
-const liveStatus=document.getElementById('liveStatus'); if(liveStatus) liveStatus.textContent='Live Sync: eigener Zug gespeichert'; window.setTimeout(()=>{ const el=document.getElementById('liveStatus'); if(el) el.textContent='Live Sync: aktiv'; }, 1800);
-maybeShowFrankObserver();
-await maybeShowFrankComment();
-await triggerFrankBigEvent();
+const liveStatus=document.getElementById('liveStatus');
+if(liveStatus) liveStatus.textContent='Live Sync: eigener Zug gespeichert';
+window.setTimeout(()=>{ const el=document.getElementById('liveStatus'); if(el) el.textContent='Live Sync: aktiv'; }, 1800);
+
 const afterSteps=(state.players.find(p=>p.name===playerName)||{}).steps||0;
 const bossByTile=BOSS_TILE_POSITIONS.includes(boardPosition(afterSteps)) && boardPosition(afterSteps)!==boardPosition(beforeSteps);
 const bossByTask=selectedTemplate?.category==='Boss-Fight';
-if(bossByTile||bossByTask){ await triggerBossEventForPlayer(playerName, bossByTile?'Boss-Feld erreicht':'Boss-Quest gelöst'); renderAll(); }
-}catch(e){showMessage(adminMessage,e.message,'error')}
-finally{
-  window.setTimeout(()=>{ isSubmittingEntry = false; }, 500);
+
+window.setTimeout(async()=>{
+  try{
+    maybeShowFrankObserver();
+    await maybeShowFrankComment();
+    await triggerFrankBigEvent();
+    if(bossByTile||bossByTask){
+      await triggerBossEventForPlayer(playerName, bossByTile?'Boss-Feld erreicht':'Boss-Quest gelöst');
+      renderAll();
+    }
+  }catch(e){}
+}, 50);
+}catch(e){
+  showMessage(adminMessage,e.message,'error');
+}finally{
+  window.setTimeout(()=>{ isSubmittingEntry = false; }, 250);
 }
 }
 

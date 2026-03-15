@@ -45,3 +45,6 @@ Wie beim ersten Paket:
 - Quest-Kategorien sind nur noch per Dropdown auswählbar
 - Dropdown-Menüs kontrastreicher
 - Schnellbuchung gegen Doppelauslösung abgesichert
+
+- Schnellbuchungen nutzen jetzt sauber die Punkte/Kategorie der geklickten Quest
+- Frank-Events werden nach dem Eintragen asynchron ausgelöst, damit Schritte und UI sofort reagieren
