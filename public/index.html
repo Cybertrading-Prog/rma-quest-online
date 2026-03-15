@@ -41,7 +41,7 @@ const FRANK_JACKPOT_LINES=[
   name=>`${name}, sehr gut.`
 ];
 const FRANK_AUDIT_LINES=[
-  name=>`Moment… ${name}… das schaue ich mir mir genauer an.`,
+  name=>`Moment… ${name}… das schaue ich mir genauer an.`,
   name=>`${name}, ich prüfe das jetzt.`,
   name=>`${name}, Audit-Zeit.`
 ];
@@ -157,7 +157,31 @@ function renderChallenges(){challengeBoardEl.innerHTML=state.dailyChallenges.map
 function renderAdmin(){if(!isAdmin()) return;const userList=document.getElementById('userList'), players=state.players.map(p=>p.name);userList.innerHTML=players.map(name=>`<div class="entry"><div class="topbar"><strong>${name}</strong><span class="tag role-player">player</span></div><div class="controls" style="margin-top:10px;"><div><label>Neuer Name</label><input id="rename_${name}" value="${name}"/></div><div style="display:flex;align-items:flex-end;"><button class="secondary rename-btn" data-old-name="${name}" type="button">Umbenennen</button></div></div></div>`).join('');document.querySelectorAll('.rename-btn').forEach(btn=>btn.addEventListener('click',async()=>{const oldName=btn.dataset.oldName,newName=document.getElementById(`rename_${oldName}`).value.trim();try{const data=await api('/api/action',{method:'POST',body:{action:'renamePlayer',payload:{oldName,newName}}});state=data.state;renderAll();showMessage(adminMessage,'Spieler umbenannt.','success')}catch(e){showMessage(adminMessage,e.message,'error')}}));document.getElementById('resetPasswordUser').innerHTML=players.map(name=>`<option value="${name}">${name}</option>`).join('');const taskList=document.getElementById('taskList');taskList.innerHTML=state.taskTemplates.map(t=>`<div class="entry"><div class="topbar"><strong>${t.name}</strong><span class="tag ${t.active?'points':'manual'}">${t.active?'Aktiv':'Versteckt'}</span></div><div class="controls" style="margin-top:10px;"><div><label>Name</label><input id="task_name_${t.id}" value="${t.name}"/></div><div><label>Kategorie</label><input id="task_category_${t.id}" value="${t.category}"/></div></div><div class="controls" style="margin-top:10px;"><div><label>Punkte</label><input id="task_points_${t.id}" type="number" value="${t.points}"/></div><div><label>Aktiv</label><select id="task_active_${t.id}"><option value="true" ${t.active?'selected':''}>Ja</option><option value="false" ${!t.active?'selected':''}>Nein</option></select></div></div><button class="secondary task-save-btn" data-task-id="${t.id}" type="button" style="margin-top:10px;">Speichern</button></div>`).join('');document.querySelectorAll('.task-save-btn').forEach(btn=>btn.addEventListener('click',async()=>{const id=Number(btn.dataset.taskId);try{const data=await api('/api/action',{method:'POST',body:{action:'updateTaskTemplate',payload:{id,name:document.getElementById(`task_name_${id}`).value.trim(),category:document.getElementById(`task_category_${id}`).value.trim(),points:Number(document.getElementById(`task_points_${id}`).value||0),active:document.getElementById(`task_active_${id}`).value==='true'}}});state=data.state;renderAll();showMessage(adminMessage,'Quest aktualisiert.','success')}catch(e){showMessage(adminMessage,e.message,'error')}}));const observerStatusTag=document.getElementById('observerStatusTag');observerStatusTag.textContent=state.observerEnabled?'Aktiv':'Aus';observerStatusTag.className=`tag ${state.observerEnabled?'points':'manual'}`}
 function renderAll(){renderVisibility(); if(!session||!state) return; ensureFrankState(); renderSessionHeader(); renderStats(); renderPlayers(); renderBoard(); populateTaskControls(); renderFeed(); renderChallenges(); renderAdmin();}
 function stopObserverPopup(){observerPopupEl.classList.add('hidden')} function stopFrankTakeover(){frankTakeoverEl.classList.add('hidden')}
-function maybeShowFrankObserver(){if(!state?.observerEnabled) return; actionsSinceObserver += 1; const now=Date.now(); if(actionsSinceObserver<2) return; if(now-lastFrankObserverAt<12000) return; if(Math.random()>.24) return; lastFrankObserverAt=now; actionsSinceObserver=0; if(Math.random()<.16){takeoverTextEl.textContent=randomItem(FRANK_TAKEOVER_LINES); frankTakeoverEl.classList.remove('hidden'); document.body.classList.add('shake','flash'); playFrankVoice('angry'); window.setTimeout(()=>document.body.classList.remove('shake'),850); window.setTimeout(()=>document.body.classList.remove('flash'),650); window.setTimeout(()=>stopFrankTakeover(),4200); return;} const name=randomRealPlayerName(); observerTextEl.textContent='„'+randomItem(FRANK_COMMENT_LINES)(name)+'“'; observerPopupEl.classList.remove('hidden'); playFrankVoice('audit'); window.setTimeout(()=>stopObserverPopup(),5000);} observerTextEl.textContent='„'+randomItem(FRANK_OBSERVER_LINES)+'“'; observerPopupEl.classList.remove('hidden'); playFrankVoice('audit'); window.setTimeout(()=>stopObserverPopup(),5000);}
+function maybeShowFrankObserver(){
+  if(!state?.observerEnabled) return;
+  actionsSinceObserver += 1;
+  const now=Date.now();
+  if(actionsSinceObserver<2) return;
+  if(now-lastFrankObserverAt<12000) return;
+  if(Math.random()>.24) return;
+  lastFrankObserverAt=now;
+  actionsSinceObserver=0;
+  if(Math.random()<.16){
+    takeoverTextEl.textContent=randomItem(FRANK_TAKEOVER_LINES);
+    frankTakeoverEl.classList.remove('hidden');
+    document.body.classList.add('shake','flash');
+    playFrankVoice('angry');
+    window.setTimeout(()=>document.body.classList.remove('shake'),850);
+    window.setTimeout(()=>document.body.classList.remove('flash'),650);
+    window.setTimeout(()=>stopFrankTakeover(),4200);
+    return;
+  }
+  const name=randomRealPlayerName();
+  observerTextEl.textContent='„'+randomItem(FRANK_COMMENT_LINES)(name)+'“';
+  observerPopupEl.classList.remove('hidden');
+  playFrankVoice('audit');
+  window.setTimeout(()=>stopObserverPopup(),5000);
+}
 async function triggerBossEventForPlayer(playerName, sourceLabel){const event=randomItem(BOSS_EVENTS); event.apply(state, playerName); try{const data=await api('/api/action',{method:'POST',body:{action:'replaceState',payload:{state}}}); state=data.state;}catch{} bossTitleEl.textContent=event.title; bossSubtitleEl.textContent=sourceLabel||event.subtitle; bossQuoteEl.textContent=randomItem(BOSS_QUOTES); bossResultEl.textContent=event.result; bossOverlayEl.classList.remove('hidden'); document.body.classList.add('shake','flash'); playFrankVoice(event.key); window.setTimeout(()=>document.body.classList.remove('shake'),850); window.setTimeout(()=>document.body.classList.remove('flash'),650);}
 async function loadState(){const data=await api('/api/state'); state=data.state; session=data.session; ensureFrankState(); renderAll();}
 async function addEntry(taskTemplateId){try{
