@@ -1,0 +1,1 @@
+const { getState, getSession, json } = require('../lib/state'); module.exports=async(req,res)=>{const s=getSession(req); if(!s) return json(res,401,{error:'Nicht eingeloggt'}); try{const {state}=await getState(); return json(res,200,{state,session:s});}catch(e){return json(res,500,{error:'State konnte nicht geladen werden', detail:e.message});}};
