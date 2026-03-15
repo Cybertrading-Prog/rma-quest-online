@@ -39,3 +39,9 @@ Wie beim ersten Paket:
 - Vorgegebene Frank-Standardbilder sind jetzt direkt eingebaut
 - Dropdowns haben dunklen Hintergrund und helle Schrift
 - Kategorie bei Quest-Erstellung und -Bearbeitung ist jetzt ein Dropdown aus bestehenden Kategorien
+
+- Titel und Startscreen-Texte auf 'LevelUp statt Meckern!' angepasst
+- Frank-Defaultbilder sauber auf die gelieferten PNGs verdrahtet
+- Quest-Kategorien sind nur noch per Dropdown auswählbar
+- Dropdown-Menüs kontrastreicher
+- Schnellbuchung gegen Doppelauslösung abgesichert
