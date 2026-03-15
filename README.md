@@ -35,3 +35,7 @@ Wie beim ersten Paket:
 - Admin kann Frank-Bilder je Stimmung hochladen und auf Standard zurücksetzen
 
 - Live Sync für alle eingeloggten Spieler per automatischem 5-Sekunden-Abgleich
+
+- Vorgegebene Frank-Standardbilder sind jetzt direkt eingebaut
+- Dropdowns haben dunklen Hintergrund und helle Schrift
+- Kategorie bei Quest-Erstellung und -Bearbeitung ist jetzt ein Dropdown aus bestehenden Kategorien
