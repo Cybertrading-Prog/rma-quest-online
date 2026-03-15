@@ -30,3 +30,6 @@ Wie beim ersten Paket:
 - Audit
 - Jackpot
 - Boss-Events bleiben aktiv
+
+- Frank-Stimmungsbilder je Event sind wieder drin
+- Admin kann Frank-Bilder je Stimmung hochladen und auf Standard zurücksetzen
