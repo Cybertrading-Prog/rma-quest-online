@@ -21,3 +21,12 @@ Wie beim ersten Paket:
 - SUPABASE_URL
 - SUPABASE_SERVICE_ROLE_KEY
 - SESSION_SECRET
+
+
+## Frank Level 2
+- seltene große Frank-Events alle ca. 30–45 Minuten
+- kleine Namens-Kommentare mit echten Spielernamen
+- Rage Mode
+- Audit
+- Jackpot
+- Boss-Events bleiben aktiv
