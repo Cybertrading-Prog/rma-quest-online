@@ -24,6 +24,39 @@ module.exports=async(req,res)=>{
     state.entries.push({id:crypto.randomUUID(),playerName,title:template.name,points,category,note:String(payload.note||''),manual:false,createdBy:session.username,createdAt:new Date().toISOString()});
     applyChallengeBonuses(state); await saveState(state); return json(res,200,{ok:true,state});
   }
+
+  if(action==='resetSteps'){
+    if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
+    state.players.forEach(p => p.steps = 0);
+    await saveState(state);
+    return json(res,200,{ok:true,state});
+  }
+
+  if(action==='resetEntries'){
+    if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
+    state.entries = [];
+    await saveState(state);
+    return json(res,200,{ok:true,state});
+  }
+
+  if(action==='resetChallenges'){
+    if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
+    state.challengeBonusClaims = {};
+    state.challengeDate = todayKey();
+    await saveState(state);
+    return json(res,200,{ok:true,state});
+  }
+
+  if(action==='resetAll'){
+    if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
+    state.players.forEach(p => p.steps = 0);
+    state.entries = [];
+    state.challengeBonusClaims = {};
+    state.challengeDate = todayKey();
+    await saveState(state);
+    return json(res,200,{ok:true,state});
+  }
+
   if(action==='replaceState'){ await saveState(payload.state); return json(res,200,{ok:true,state:payload.state}); }
   if(action==='createPlayer'){
     if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
