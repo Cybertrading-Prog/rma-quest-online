@@ -216,4 +216,42 @@ document.getElementById('changeOwnPasswordBtn').addEventListener('click',async()
 document.getElementById('createTaskBtn').addEventListener('click',async()=>{try{const data=await api('/api/action',{method:'POST',body:{action:'createTaskTemplate',payload:{name:document.getElementById('newTaskName').value.trim(),category:document.getElementById('newTaskCategory').value.trim(),points:Number(document.getElementById('newTaskPoints').value||0),active:document.getElementById('newTaskActive').value==='true'}}}); state=data.state; document.getElementById('newTaskName').value=''; document.getElementById('newTaskCategory').value=''; document.getElementById('newTaskPoints').value='1'; document.getElementById('newTaskActive').value='true'; renderAll(); showMessage(adminMessage,'Quest erstellt.','success');}catch(e){showMessage(adminMessage,e.message,'error')}});
 document.getElementById('toggleObserverBtn').addEventListener('click',async()=>{try{const data=await api('/api/action',{method:'POST',body:{action:'toggleObserver',payload:{enabled:!state.observerEnabled}}}); state=data.state; renderAll(); showMessage(adminMessage,`Observer ${state.observerEnabled?'aktiv':'aus'}.`,'success');}catch(e){showMessage(adminMessage,e.message,'error')}});
 (async()=>{try{const data=await api('/api/session'); session=data.session; await loadState();}catch{renderVisibility();}})();
-</script></body></html>
+</script>
+<div class="card">
+<h2>Admin Daten</h2>
+<button onclick="exportGame()">Export Spieldaten</button>
+<input type="file" id="importFile"/>
+<button onclick="importGame()">Import Spieldaten</button>
+<hr/>
+<button onclick="resetSteps()">Schritte zurücksetzen</button>
+<button onclick="resetEntries()">Spielverlauf löschen</button>
+<button onclick="resetChallenges()">Tages‑Challenges reset</button>
+<button onclick="resetAll()">Kompletten Spielstand reset</button>
+</div>
+
+<script>
+async function exportGame(){
+ const data = await api('/api/state');
+ const blob = new Blob([JSON.stringify(data.state,null,2)],{type:'application/json'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='rma-quest-backup.json';
+ a.click();
+}
+
+async function importGame(){
+ const f=document.getElementById('importFile').files[0];
+ if(!f) return;
+ const text=await f.text();
+ const state=JSON.parse(text);
+ await api('/api/action',{method:'POST',body:{action:'replaceState',payload:{state}}});
+ location.reload();
+}
+
+async function resetSteps(){await api('/api/action',{method:'POST',body:{action:'resetSteps'}});location.reload();}
+async function resetEntries(){await api('/api/action',{method:'POST',body:{action:'resetEntries'}});location.reload();}
+async function resetChallenges(){await api('/api/action',{method:'POST',body:{action:'resetChallenges'}});location.reload();}
+async function resetAll(){if(confirm('Wirklich alles resetten?')){await api('/api/action',{method:'POST',body:{action:'resetAll'}});location.reload();}}
+</script>
+</body>
+</html>
