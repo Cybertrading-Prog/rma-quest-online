@@ -33,3 +33,5 @@ Wie beim ersten Paket:
 
 - Frank-Stimmungsbilder je Event sind wieder drin
 - Admin kann Frank-Bilder je Stimmung hochladen und auf Standard zurücksetzen
+
+- Live Sync für alle eingeloggten Spieler per automatischem 5-Sekunden-Abgleich
