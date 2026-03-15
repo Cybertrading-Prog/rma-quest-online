@@ -1,0 +1,7 @@
+{
+  "name": "rma-quest-online-frank-demo",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.56.0"
+  }
+}
