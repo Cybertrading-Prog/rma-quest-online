@@ -12,6 +12,8 @@ module.exports=async(req,res)=>{
   const action=body.action, payload=body.payload||{};
   const loaded=await getState(); const state=loaded.state;
   if(state.challengeDate!==todayKey()){state.challengeDate=todayKey(); state.challengeBonusClaims={};}
+  const sanitizeState = (s) => { const out = { ...s }; delete out.frankImageOverrides; return out; };
+
   if(action==='addEntry'){
     const template=state.taskTemplates.find(t=>Number(t.id)===Number(payload.taskTemplateId));
     if(!template) return json(res,400,{error:'Quest nicht gefunden'});
@@ -22,7 +24,7 @@ module.exports=async(req,res)=>{
     const category=isAdmin(session)?String(payload.category||template.category):template.category;
     player.steps+=points;
     state.entries.push({id:crypto.randomUUID(),playerName,title:template.name,points,category,note:String(payload.note||''),manual:false,createdBy:session.username,createdAt:new Date().toISOString()});
-    applyChallengeBonuses(state); await saveState(state); return json(res,200,{ok:true,state});
+    applyChallengeBonuses(state); delete state.frankImageOverrides; await saveState(state); return json(res,200,{ok:true,state:sanitizeState(state)});
   }
 
   if(action==='resetSteps'){
@@ -57,13 +59,13 @@ module.exports=async(req,res)=>{
     return json(res,200,{ok:true,state});
   }
 
-  if(action==='replaceState'){ await saveState(payload.state); return json(res,200,{ok:true,state:payload.state}); }
+  if(action==='replaceState'){ const nextState = { ...payload.state }; delete nextState.frankImageOverrides; await saveState(nextState); return json(res,200,{ok:true,state:sanitizeState(nextState)}); }
   if(action==='createPlayer'){
     if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
     const username=String(payload.username||'').trim(), password=String(payload.password||'');
     if(!username||!password) return json(res,400,{error:'Benutzername und Passwort fehlen'});
     const {error}=await supabase.from('app_users').insert({username,password_hash:password,role:'player',player_name:username,is_active:true}); if(error) throw error;
-    state.players.push({id:state.nextPlayerId++, name:username, steps:0}); await saveState(state); return json(res,200,{ok:true,state});
+    state.players.push({id:state.nextPlayerId++, name:username, steps:0}); delete state.frankImageOverrides; await saveState(state); return json(res,200,{ok:true,state:sanitizeState(state)});
   }
   if(action==='renamePlayer'){
     if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
@@ -71,7 +73,7 @@ module.exports=async(req,res)=>{
     const player=state.players.find(p=>p.name===oldName); if(player) player.name=newName;
     state.entries.forEach(e=>{if(e.playerName===oldName) e.playerName=newName;});
     const {error}=await supabase.from('app_users').update({username:newName,player_name:newName,updated_at:new Date().toISOString()}).eq('player_name',oldName).eq('role','player'); if(error) throw error;
-    await saveState(state); return json(res,200,{ok:true,state});
+    delete state.frankImageOverrides; await saveState(state); return json(res,200,{ok:true,state:sanitizeState(state)});
   }
   if(action==='resetPassword'){
     if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
@@ -84,21 +86,21 @@ module.exports=async(req,res)=>{
   }
   if(action==='createTaskTemplate'){
     if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
-    state.taskTemplates.push({id:state.nextTaskTemplateId++,name:String(payload.name||''),category:String(payload.category||''),points:Number(payload.points||0),active:Boolean(payload.active)}); await saveState(state); return json(res,200,{ok:true,state});
+    state.taskTemplates.push({id:state.nextTaskTemplateId++,name:String(payload.name||''),category:String(payload.category||''),points:Number(payload.points||0),active:Boolean(payload.active)}); delete state.frankImageOverrides; await saveState(state); return json(res,200,{ok:true,state:sanitizeState(state)});
   }
   if(action==='updateTaskTemplate'){
     if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
     const task=state.taskTemplates.find(t=>Number(t.id)===Number(payload.id)); if(!task) return json(res,404,{error:'Quest nicht gefunden'});
     task.name=String(payload.name||task.name); task.category=String(payload.category||task.category); task.points=Number(payload.points??task.points); task.active=Boolean(payload.active);
-    await saveState(state); return json(res,200,{ok:true,state});
+    delete state.frankImageOverrides; await saveState(state); return json(res,200,{ok:true,state:sanitizeState(state)});
   }
   if(action==='toggleObserver'){
     if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
-    state.observerEnabled=Boolean(payload.enabled); await saveState(state); return json(res,200,{ok:true,state});
+    state.observerEnabled=Boolean(payload.enabled); delete state.frankImageOverrides; await saveState(state); return json(res,200,{ok:true,state:sanitizeState(state)});
   }
   if(action==='resetTodayChallenges'){
     if(!isAdmin(session)) return json(res,403,{error:'Nur Admin'});
-    state.entries=state.entries.filter(e=>e.createdAt?.slice?.(0,10)!==state.challengeDate); state.challengeBonusClaims={}; rebuildSteps(state); await saveState(state); return json(res,200,{ok:true,state});
+    state.entries=state.entries.filter(e=>e.createdAt?.slice?.(0,10)!==state.challengeDate); state.challengeBonusClaims={}; rebuildSteps(state); delete state.frankImageOverrides; await saveState(state); return json(res,200,{ok:true,state:sanitizeState(state)});
   }
   return json(res,400,{error:'Unbekannte Aktion'});
  }catch(e){return json(res,500,{error:'Aktion fehlgeschlagen', detail:e.message});}

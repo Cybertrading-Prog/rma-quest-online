@@ -48,3 +48,8 @@ Wie beim ersten Paket:
 
 - Schnellbuchungen nutzen jetzt sauber die Punkte/Kategorie der geklickten Quest
 - Frank-Events werden nach dem Eintragen asynchron ausgelöst, damit Schritte und UI sofort reagieren
+
+- Spar-Version: Live Sync nur noch alle 20 Sekunden
+- Spar-Version: kein Polling bei inaktivem Tab
+- Spar-Version: 10 Sekunden Cooldown nach eigener Aktion
+- Frank-Bilder werden nicht mehr über /api/state übertragen, sondern separat über /api/frank_assets geladen
